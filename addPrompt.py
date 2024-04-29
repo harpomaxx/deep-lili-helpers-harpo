@@ -8,6 +8,23 @@ import sys
 WHITE = (255, 255, 255, 0)
 BLACK = (0, 0, 0, 0)
 
+
+def splitLongText(text, maxChars=40):
+    """
+    Split a text into chunks of maxChars characters, inserting a newline character
+    between each chunk, and return the joined string with newlines.
+
+    Args:
+        text (str): input text.
+        maxChars (int): maximum amount of characters for each line.
+
+    Returns:
+        (str) joined text with inserted newlines.
+    """
+
+    chunks = [text[i:i+maxChars] for i in range(0, len(text), maxChars)]
+    return "\n".join(chunks)
+
 def drawTextOnImg(text, imgSize):
     """
     Creates a new image with text.
@@ -23,7 +40,7 @@ def drawTextOnImg(text, imgSize):
     image = Image.new("RGB", imgSize, WHITE)
     font = ImageFont.truetype("DejaVuSans.ttf", size=24)
     draw = ImageDraw.Draw(image)
-    draw.text((0, 0), text, font=font, fill=BLACK)
+    draw.text((0, 0), splitLongText(text), font=font, fill=BLACK)
 
     return image
 
