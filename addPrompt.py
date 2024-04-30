@@ -6,6 +6,7 @@ from hyphen import Hyphenator
 import os
 import sys
 import semchunk
+import argparse
 
 
 # some color helper globals
@@ -35,7 +36,7 @@ def drawTextOnImg(text, imgSize):
 
     image = Image.new("RGB", imgSize, BROWN)
     font = ImageFont.truetype("DejaVuSans.ttf", size=22)
-    font_big = ImageFont.truetype("Ubuntu-B.ttf", size=36)
+    font_big = ImageFont.truetype("Ubuntu-B.ttf", size=32)
     draw = ImageDraw.Draw(image)
     print(imgSize)
     text = text[:-10]
@@ -46,7 +47,7 @@ def drawTextOnImg(text, imgSize):
     print(wrapped_text)
 
     draw.text((10, 10), '"'+wrapped_text+'"', font=font, fill=LIGHT_WHITE,align='center')
-    draw.text((320, 120), "deeplili.co", font=font_big, fill=ORANGE)
+    draw.text((345, 120), "deeplili.co", font=font_big, fill=ORANGE)
 
 
     return image
@@ -121,16 +122,23 @@ def getFolderListing(folderPath):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print(f"Usage: {sys.argv[0]} <basePath>")
-        sys.exit(1)
+    parser = argparse.ArgumentParser(description="Process some folders.")
+    parser.add_argument("--basePath", help="Base path to the folders")
+    parser.add_argument("--force", action="store_true", help="Force the generation of output.png even if it exists")
 
-    basePath = sys.argv[1]
+    args = parser.parse_args()
+
+    basePath = args.basePath
     folders = getFolderListing(basePath)
 
     for folder in folders:
         imgPath = os.path.join(folder, "image.png")
         promptPath = os.path.join(folder, "prompt.txt")
         outPath = os.path.join(folder, "output.png")
-        promptText = readTextFile(promptPath)
-        combineImageWithText(imgPath, promptText, outPath)
+
+        # Check if output exists and handle based on --force flag
+        if not os.path.exists(outPath) or args.force:
+            promptText = readTextFile(promptPath)
+            combineImageWithText(imgPath, promptText, outPath)
+        else:
+            print(f"Skipping {outPath} as it already exists. Use --force to override.")
