@@ -7,6 +7,7 @@ import os
 import sys
 import semchunk
 import argparse
+from tqdm import tqdm
 
 
 # some color helper globals
@@ -38,13 +39,13 @@ def drawTextOnImg(text, imgSize):
     font = ImageFont.truetype("DejaVuSans.ttf", size=22)
     font_big = ImageFont.truetype("Ubuntu-B.ttf", size=32)
     draw = ImageDraw.Draw(image)
-    print(imgSize)
+    #print(imgSize)
     text = text[:-10]
     h_es = Hyphenator("es_ES")
     if len(text) > 150:
         text = text[:150] + "..."
     wrapped_text = fill(text,width=39,use_hyphenator=h_es)
-    print(wrapped_text)
+    #print(wrapped_text)
 
     draw.text((10, 10), '"'+wrapped_text+'"', font=font, fill=LIGHT_WHITE,align='center')
     draw.text((345, 120), "deeplili.co", font=font_big, fill=ORANGE)
@@ -131,7 +132,7 @@ if __name__ == "__main__":
     basePath = args.basePath
     folders = getFolderListing(basePath)
 
-    for folder in folders:
+    for folder in tqdm(folders, desc="Processing folders"):
         imgPath = os.path.join(folder, "image.png")
         promptPath = os.path.join(folder, "prompt.txt")
         outPath = os.path.join(folder, "output.png")
