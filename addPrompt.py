@@ -1,31 +1,27 @@
 #!/usr/bin/env python3
 
 from PIL import Image, ImageDraw, ImageFont
+from hyphen.textwrap2 import fill
+from hyphen import Hyphenator
 import os
 import sys
+import semchunk
+import argparse
+from tqdm import tqdm
+
 
 # some color helper globals
 WHITE = (255, 255, 255, 0)
 BLACK = (0, 0, 0, 0)
+GREEN = (0, 128, 0)
+YELLOW = (255, 255, 0)
+RED = (252, 65, 0)
+YELLOW2 = (255, 197, 90)
+BLUE = (0, 33, 94)
+BROWN = (50, 1, 47)
+LIGHT_WHITE = (226, 223, 208)
+ORANGE = (249, 115, 0)
 
-
-def splitLongText(text, maxChars=40):
-    """
-    Split a text into chunks of maxChars characters, inserting a newline character
-    between each chunk, and return the joined string with newlines.
-
-    Args:
-        text (str): input text.
-        maxChars (int): maximum amount of characters for each line.
-
-    Returns:
-        (str) joined text with inserted newlines.
-    """
-
-    # remove possible "sks style" string
-    text = text.replace("sks style", "").strip()
-    chunks = [text[i:i+maxChars] for i in range(0, len(text), maxChars)]
-    return "\n".join(chunks)
 
 def drawTextOnImg(text, imgSize):
     """
@@ -39,10 +35,21 @@ def drawTextOnImg(text, imgSize):
         New image created.
     """
 
-    image = Image.new("RGB", imgSize, WHITE)
-    font = ImageFont.truetype("DejaVuSans.ttf", size=24)
+    image = Image.new("RGB", imgSize, BROWN)
+    font = ImageFont.truetype("DejaVuSans.ttf", size=22)
+    font_big = ImageFont.truetype("Ubuntu-B.ttf", size=32)
     draw = ImageDraw.Draw(image)
-    draw.text((0, 0), splitLongText(text), font=font, fill=BLACK)
+    #print(imgSize)
+    text = text[:-10]
+    h_es = Hyphenator("es_ES")
+    if len(text) > 150:
+        text = text[:150] + "..."
+    wrapped_text = fill(text,width=39,use_hyphenator=h_es)
+    #print(wrapped_text)
+
+    draw.text((10, 10), '"'+wrapped_text+'"', font=font, fill=LIGHT_WHITE,align='center')
+    draw.text((345, 120), "deeplili.co", font=font_big, fill=ORANGE)
+
 
     return image
 
@@ -74,7 +81,6 @@ def combineImageWithText(imagePath, text, outPath):
     # combine both images into the new one
     newImage.paste(image, (0, 0))
     newImage.paste(textImg, (0, image.size[1]))
-
     newImage.save(outPath)
 
 def readTextFile(filePath):
@@ -117,16 +123,23 @@ def getFolderListing(folderPath):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print(f"Usage: {sys.argv[0]} <basePath>")
-        sys.exit(1)
+    parser = argparse.ArgumentParser(description="Process some folders.")
+    parser.add_argument("--basePath", help="Base path to the folders")
+    parser.add_argument("--force", action="store_true", help="Force the generation of output.png even if it exists")
 
-    basePath = sys.argv[1]
+    args = parser.parse_args()
+
+    basePath = args.basePath
     folders = getFolderListing(basePath)
 
-    for folder in folders:
+    for folder in tqdm(folders, desc="Processing folders"):
         imgPath = os.path.join(folder, "image.png")
         promptPath = os.path.join(folder, "prompt.txt")
         outPath = os.path.join(folder, "output.png")
-        promptText = readTextFile(promptPath)
-        combineImageWithText(imgPath, promptText, outPath)
+
+        # Check if output exists and handle based on --force flag
+        if not os.path.exists(outPath) or args.force:
+            promptText = readTextFile(promptPath)
+            combineImageWithText(imgPath, promptText, outPath)
+        else:
+            print(f"Skipping {outPath} as it already exists. Use --force to override.")
