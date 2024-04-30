@@ -22,6 +22,8 @@ def splitLongText(text, maxChars=40):
         (str) joined text with inserted newlines.
     """
 
+    # remove possible "sks style" string
+    text = text.replace("sks style", "").strip()
     chunks = [text[i:i+maxChars] for i in range(0, len(text), maxChars)]
     return "\n".join(chunks)
 
