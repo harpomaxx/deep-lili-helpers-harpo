@@ -47,7 +47,7 @@ def drawTextOnImg(text, imgSize):
     wrapped_text = fill(text,width=39,use_hyphenator=h_es)
     #print(wrapped_text)
 
-    draw.text((10, 10), '"'+wrapped_text+'"', font=font, fill=LIGHT_WHITE,align='center')
+    draw.text((10, 10), '"'+wrapped_text+'"', font=font, fill=LIGHT_WHITE,align='left')
     draw.text((345, 120), "deeplili.co", font=font_big, fill=ORANGE)
 
 
